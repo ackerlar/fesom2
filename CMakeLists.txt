@@ -13,6 +13,6 @@ set(OIFS_COUPLED OFF CACHE BOOL "compile fesom coupled to OpenIFS. (Also needs F
 set(CRAY OFF CACHE BOOL "compile with cray ftn")
 set(USE_ICEPACK OFF CACHE BOOL "compile fesom with the Iceapck modules for sea ice column physics.")
 set(VERBOSE OFF CACHE BOOL "toggle debug output")
-set(ASYNC_ICEBERGS OFF CACHE BOOL "compile fesom with or without support for asynchronous iceberg computations")
+set(ASYNC_ICEBERGS ON CACHE BOOL "compile fesom with or without support for asynchronous iceberg computations")
 #add_subdirectory(oasis3-mct/lib/psmile)
 add_subdirectory(src)
