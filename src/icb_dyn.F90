@@ -87,9 +87,15 @@ type(t_mesh), intent(in) , target :: mesh
  call FEM_3eval(mesh, T_keel_ib,S_keel_ib,lon,lat,T_keel,S_keel,iceberg_elem)
 
 
- !ATMOSPHERIC VELOCITY ua_ib, va_ib
- ! kh 11.02.21
- call FEM_eval(mesh, ua_ib,va_ib,lon,lat,u_wind_ib,v_wind_ib,iceberg_elem)      
+!! LA 2023-03-18 --------------------------------
+!! !ATMOSPHERIC VELOCITY ua_ib, va_ib
+!! ! kh 11.02.21
+call FEM_eval(mesh, ua_ib,va_ib,lon,lat,u_wind_ib,v_wind_ib,iceberg_elem)      
+!call FEM_eval(mesh, tauxa_ib, tauya_ib,lon,lat,stress_atmoce_x,stress_atmoce_y,iceberg_elem)      
+!ua_ib = tauxa_ib / abs(tauxa_ib) * sqrt( abs(tauxa_ib) / rho_air / 0.0015 )
+!va_ib = tauya_ib / abs(tauya_ib) * sqrt( abs(tauya_ib) / rho_air / 0.0015 )
+!! ----------------------------------------------
+
 
  !ICE VELOCITY ui_ib, vi_ib
  ! kh 11.02.21
@@ -357,9 +363,10 @@ icbID = mype+10
  ! 	           * abs_omib * uo_ib)/mass_ib !calculate part of it implicitly
  ocean_skin_u     = (rho_h2o * Cdo_skin * Ad  &
   	           * abs_omib_skin * uo_skin_ib)/mass_ib !calculate part of it implicitly
-		       
+
  air_drag_u       = (0.5 * Ca * rho_air * Aa  &
 	           * abs_amib * (ua_ib - u_ib))/mass_ib
+
  air_skin_u       = (rho_air * Cda_skin * Ad   &
   	           * abs_amib * (ua_ib - u_ib))/mass_ib 
 	     

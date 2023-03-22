@@ -14,7 +14,7 @@ module cpl_driver
   !
   use mod_oasis                    ! oasis module
   !---wiso-code
-  use g_config, only : dt, lwiso   ! add lwiso switch
+  use g_config, only : dt, lwiso, use_icebergs   ! add lwiso switch
   !---wiso-code-end
   use o_param,  only : rad
   use g_PARSUP
@@ -453,6 +453,12 @@ contains
     cpl_recv(10) = 'heat_ico'
     cpl_recv(11) = 'heat_swo'    
     cpl_recv(12) = 'hydr_oce'
+! --- icebergs ---
+    IF (use_icebergs) THEN
+      cpl_recv(13) = 'u10w_oce'
+      cpl_recv(14) = 'v10w_oce'
+! --- icebergs ---
+    END IF
 !---wiso-code
 ! add isotope coupling fields
     IF (lwiso) THEN

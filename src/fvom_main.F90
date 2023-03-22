@@ -201,7 +201,11 @@ type(t_mesh),             target, save :: mesh
       varlist((num_tracers+1):(num_tracers+3))  = (/'h2o18', 'hDo16', 'h2o16'/)
       nsend = nsend + 6       ! add number of water isotope tracers to coupling parameter nsend, nrecv
       nrecv = nrecv + 6
+! --- icebergs ---
+    ELSEIF (use_icebergs) THEN
+      nrecv = nrecv + 2
     END IF
+! --- icebergs ---
 !---wiso-code-end
 #endif
 

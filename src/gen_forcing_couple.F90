@@ -283,11 +283,18 @@ subroutine update_atm_forcing(istep, mesh)
          elseif (i.eq.14) then
              if (action) then
              ! tot_prec_o18 over water: this variable includes (i) rain over open water and sea ice, (ii) snow and evap over open water,  (iii) river runoff
-             www1(:)         =  exchange(:)
+! --- icebergs ---
+             if (lwiso) then
+                www1(:)         =  exchange(:)
+             elseif (use_icebergs) then
+                v_wind(:)       =  exchange(:)
+             end if
              end if
              mask=1.
              if (lwiso) then
-             call force_flux_consv(www1, mask, i, 0,action,mesh)
+                call force_flux_consv(www1, mask, i, 0,action,mesh)
+             elseif (use_icebergs) then
+                call force_flux_consv(v_wind, mask, i, 0,action,mesh)
              end if
          elseif (i.eq.15) then
              if (action) then
@@ -301,11 +308,17 @@ subroutine update_atm_forcing(istep, mesh)
          elseif (i.eq.13) then
              if (action) then
              ! tot_prec_o16 over water: this variable includes (i) rain open water and sea ice, (ii) snow and evap over open water,  (iii) river runoff
-             www3(:)         =  exchange(:)
+             if (lwiso) then
+                www3(:)         =  exchange(:)
+             elseif (use_icebergs) then
+                u_wind(:)       =  exchange(:)
+             end if
              end if
              mask=1.
              if (lwiso) then
-             call force_flux_consv(www3, mask, i, 0,action,mesh)
+                call force_flux_consv(www3, mask, i, 0,action,mesh)
+             elseif (use_icebergs) then
+                call force_flux_consv(u_wind, mask, i, 0,action,mesh)
              end if
          elseif (i.eq.17) then
              if (action) then
