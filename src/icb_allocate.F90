@@ -6,8 +6,9 @@ subroutine allocate_icb()
   integer       :: n2
   n2=myDim_nod2D+eDim_nod2D
 
-  allocate(ibhf(n2), ibfwb(n2), ibfwl(n2), ibfwe(n2), ibfwbv(n2))
+  allocate(ibhf(n2), ibfwb(n2), ibfwl(n2), ibfwe(n2), ibfwbv(n2), iblhf(n2))
   ibhf=0
+  ibfhf=0 !LA only for debugging
   ibfwb=0
   ibfwl=0
   ibfwe=0
@@ -81,11 +82,13 @@ subroutine allocate_icb()
   allocate(fwb_flux_ib(ib_num))
   allocate(fwbv_flux_ib(ib_num))
   allocate(heat_flux_ib(ib_num))
+  allocate(lheat_flux_ib(ib_num)) ! LA only for debugging
   fwe_flux_ib = 0.0
   fwl_flux_ib = 0.0
   fwb_flux_ib = 0.0
   fwbv_flux_ib = 0.0
   heat_flux_ib = 0.0
+  lheat_flux_ib = 0.0 ! LA only for debugging
   allocate(arr_block(15*ib_num))
   allocate(elem_block(ib_num))
   allocate(vl_block(4*ib_num))

@@ -115,7 +115,7 @@ subroutine iceberg_newdimensions(ib, depth_ib,height_ib,length_ib,width_ib,M_b,M
   use g_clock
   use g_forcing_arrays
   use g_rotate_grid
-  use iceberg_params, only: l_weeksmellor, ascii_out, icb_outfreq, vl_block, bvl_mean, lvlv_mean, lvle_mean, lvlb_mean, smallestvol_icb, fwb_flux_ib, fwe_flux_ib, fwbv_flux_ib, fwl_flux_ib, scaling
+  use iceberg_params, only: l_weeksmellor, ascii_out, icb_outfreq, vl_block, bvl_mean, lvlv_mean, lvle_mean, lvlb_mean,smallestvol_icb, fwb_flux_ib, fwe_flux_ib, fwbv_flux_ib, fwl_flux_ib, scaling, heat_flux_ib,lheat_flux_ib
   use g_config, only: steps_per_ib_step
 
   implicit none  
@@ -130,6 +130,9 @@ subroutine iceberg_newdimensions(ib, depth_ib,height_ib,length_ib,width_ib,M_b,M
   logical		:: force_last_output
   real, dimension(4)	:: arr
   integer               :: istep
+  ! LA: include latent heat 2023-04-04
+  real(kind=8),parameter ::  L                  = 334000.                   ! [J/Kg]
+!  real(kind=8)           ::  lheat_flux_ib
 
     !in case the iceberg melts in this step, output has to be written (set to true below)
     force_last_output=.false.
@@ -248,6 +251,24 @@ subroutine iceberg_newdimensions(ib, depth_ib,height_ib,length_ib,width_ib,M_b,M
 	
     !save in larger array	  
     vl_block((ib-1)*4+1 : ib*4)=arr
+
+    ! -----------------------
+    ! LA: set iceberg heatflux at least to latent heat 2023-04-04
+    ! Latent heat flux at base and sides also changes lines 475/476
+    lheat_flux_ib(ib) = rho_icb*L*tvl*scaling(ib)/dt/REAL(steps_per_ib_step)
+    !if( mype.eq.0 ) then
+    !    write(*,*) 'LA DEBUG: rho_icb = ',rho_icb
+    !    write(*,*) 'LA DEBUG: L = ',L
+    !    write(*,*) 'LA DEBUG: tvl = ',tvl
+    !    write(*,*) 'LA DEBUG: scaling(ib) = ',scaling(ib)
+    !    write(*,*) 'LA DEBUG: lheat_flux_ib(ib) = ',lheat_flux_ib(ib)
+    !end if
+    
+    ! LA should be uncommented!!!
+    if( (heat_flux_ib(ib).gt.0.0) .and. (heat_flux_ib(ib).lt.lheat_flux_ib(ib))) then
+        heat_flux_ib(ib)=lheat_flux_ib(ib)
+    end if
+    ! -----------------------
 
 end subroutine iceberg_newdimensions
 
@@ -457,7 +478,13 @@ subroutine iceberg_heat_water_fluxes_3eq(ib, M_b, T_ib,S_ib,v_rel, depth_ib, t_f
      !rt  s_surf_flux(i,j)=gas*(sf-(s(i,j,N,lrhs)+35.0))
 
      !heat_flux_ib(ib)  = rhow*cpw*gat*(tin-tf)*scaling(ib)      ! [W/m2]  ! positive for upward
+     
+     ! -------------------
+     ! LA include heat flux at sides - 2023-04-04
      heat_flux_ib(ib)  = rhow*cpw*gat*(tin-tf)*length_ib(ib)*width_ib(ib)*scaling(ib)      ! [W]  ! positive for upward
+     !heat_flux_ib(ib)  = rhow*cpw*gat*(tin-tf)*(length_ib(ib)*width_ib(ib)+abs(depth_ib)*length_ib(ib)*4)*scaling(ib)      ! [W]  ! positive for upward
+     ! -------------------
+     
      !fw_flux_ib(ib) =          gas*(sf-sal)/sf   ! [m/s]   !
       M_b 	    =          gas*(sf-sal)/sf   ! [m/s]   ! m freshwater per second
      !fw_flux_ib(ib) = M_b

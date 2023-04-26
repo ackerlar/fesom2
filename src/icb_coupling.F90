@@ -16,6 +16,7 @@ subroutine reset_ib_fluxes()
     ibfwl = 0
     ibfwe = 0
     ibhf = 0
+    iblhf = 0 !LA only for debugging
 end subroutine
 
 
@@ -72,6 +73,7 @@ type(t_mesh), intent(in) , target :: mesh
                 ibfwl(iceberg_node) = ibfwl(iceberg_node) - fwl_flux_ib(ib) / area(1,iceberg_node) / num_ib_nods_in_ib_elem
                 ibfwe(iceberg_node) = ibfwe(iceberg_node) - fwe_flux_ib(ib) / area(1,iceberg_node) / num_ib_nods_in_ib_elem
                 ibhf(iceberg_node) = ibhf(iceberg_node) - heat_flux_ib(ib) / area(1,iceberg_node) / num_ib_nods_in_ib_elem
+                iblhf(iceberg_node) = iblhf(iceberg_node) - lheat_flux_ib(ib) / area(1,iceberg_node) / num_ib_nods_in_ib_elem
             !else
             !    write(*,*) 'iceberg_node only communication node. iceberg_node=',iceberg_node,', mydim_nod2d=',mydim_nod2d
             end if

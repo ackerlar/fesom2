@@ -91,6 +91,10 @@ type(t_mesh), intent(in) , target :: mesh
 !! !ATMOSPHERIC VELOCITY ua_ib, va_ib
 !! ! kh 11.02.21
 call FEM_eval(mesh, ua_ib,va_ib,lon,lat,u_wind_ib,v_wind_ib,iceberg_elem)      
+
+! LA 2023-04-03 just for debugging!!
+!ua_ib = 0.0
+!va_ib = 0.0
 !call FEM_eval(mesh, tauxa_ib, tauya_ib,lon,lat,stress_atmoce_x,stress_atmoce_y,iceberg_elem)      
 !ua_ib = tauxa_ib / abs(tauxa_ib) * sqrt( abs(tauxa_ib) / rho_air / 0.0015 )
 !va_ib = tauya_ib / abs(tauya_ib) * sqrt( abs(tauya_ib) / rho_air / 0.0015 )
