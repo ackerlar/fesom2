@@ -63,7 +63,6 @@ type(t_mesh), intent(in) , target :: mesh
         end do
         ! ##############################################################
         
-        !write(*,*) "LA DEBUG: ib_nods_in_ib_elem=",ib_nods_in_ib_elem,", num_ib_nods_in_ib_elem=",num_ib_nods_in_ib_elem 
         do i=1, 3
             iceberg_node=ib_nods_in_ib_elem(i)
 

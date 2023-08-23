@@ -256,13 +256,6 @@ subroutine iceberg_newdimensions(ib, depth_ib,height_ib,length_ib,width_ib,M_b,M
     ! LA: set iceberg heatflux at least to latent heat 2023-04-04
     ! Latent heat flux at base and sides also changes lines 475/476
     lheat_flux_ib(ib) = rho_icb*L*tvl*scaling(ib)/dt/REAL(steps_per_ib_step)
-    !if( mype.eq.0 ) then
-    !    write(*,*) 'LA DEBUG: rho_icb = ',rho_icb
-    !    write(*,*) 'LA DEBUG: L = ',L
-    !    write(*,*) 'LA DEBUG: tvl = ',tvl
-    !    write(*,*) 'LA DEBUG: scaling(ib) = ',scaling(ib)
-    !    write(*,*) 'LA DEBUG: lheat_flux_ib(ib) = ',lheat_flux_ib(ib)
-    !end if
     
     ! LA should be uncommented!!!
     if( (heat_flux_ib(ib).gt.0.0) .and. (heat_flux_ib(ib).lt.lheat_flux_ib(ib))) then
