@@ -406,7 +406,8 @@ subroutine diff_ver_part_expl_ale(tr_num, tracers, partit, mesh)
         
         vd_flux=0._WP
         if (tracers%data(tr_num)%ID==1) then
-            flux  = -heat_flux(n)/vcpw
+            !flux  = -heat_flux(n)/vcpw
+            flux  = -heat_flux(n)/vcpw +relax_temp(n)
             rdata =  Tsurf(n)
             rlx   =  surf_relax_T
         elseif (tracers%data(tr_num)%ID==2) then

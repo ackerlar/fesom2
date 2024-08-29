@@ -90,7 +90,9 @@ MODULE g_sbf
    character(len=MAX_PATH), save   :: nm_runoff_file    ='runoff.nc'
 
    character(10),           save   :: sss_data_source   ='CORE2'
+   character(10),           save   :: sst_data_source   ='CORE2'
    character(len=MAX_PATH), save   :: nm_sss_data_file  ='PHC2_salx.nc'
+   character(len=MAX_PATH), save   :: nm_sst_data_file  ='PHC2_temx.nc'
 
    character(10),           save   :: chl_data_source   ='None' ! 'Sweeney' Chlorophyll climatology Sweeney et al. 2005
    character(len=MAX_PATH), save   :: nm_chl_data_file  ='/work/ollie/dsidoren/input/forcing/Sweeney_2005.nc'
@@ -925,7 +927,7 @@ CONTAINS
                         nm_qsr_var, nm_qlw_var, nm_tair_var, nm_prec_var, nm_snow_var, &
                         nm_mslp_var, nm_cloud_var, nm_cloud_file, nm_nc_iyear, nm_nc_imm, nm_nc_idd, nm_nc_freq, nm_nc_tmid, y_perpetual, &
                         l_xwind, l_ywind, l_xstre, l_ystre, l_humi, l_qsr, l_qlw, l_tair, l_prec, l_mslp, l_cloud, l_snow, &
-                        nm_runoff_file, runoff_data_source, runoff_climatology, nm_sss_data_file, sss_data_source, &
+                        nm_runoff_file, runoff_data_source, runoff_climatology, nm_sss_data_file, sss_data_source, nm_sst_data_file, sst_data_source, &
                         chl_data_source, nm_chl_data_file, chl_const
 
 #include "associate_part_def.h"
@@ -1102,6 +1104,49 @@ CONTAINS
       if (mype==0) write(*,*) 'Parts of forcing data (only constant in time fields) are read'
    END SUBROUTINE sbc_ini
 
+   SUBROUTINE update_sst_forcing(partit, mesh)
+      !!---------------------------------------------------------------------
+      !!                    ***  ROUTINE sbc_do ***
+      !!
+      !! ** Purpose : provide at each time-step: wind stress, ...
+      !! ** Method  :
+      !! ** Action  :
+      !!----------------------------------------------------------------------
+      use g_clock
+      IMPLICIT NONE
+
+      real(wp)     :: rdate ! date
+      integer      :: fld_idx, i
+      logical      :: update_monthly_flag
+      character(len=MAX_PATH)               :: filename
+      type(t_partit), intent(inout), target :: partit
+      type(t_mesh),   intent(in),    target :: mesh
+      
+#include "associate_part_def.h"
+#include "associate_mesh_def.h"
+#include "associate_part_ass.h"
+#include "associate_mesh_ass.h"
+
+      ! prepare a flag which checks whether to update monthly data (SSS, river runoff)
+      update_monthly_flag=( (day_in_month==num_day_in_month(fleapyear,month) .AND. timenew==86400._WP) .OR. mstep==1  )
+      
+      ! read in SST for applying SST restoring
+      if (surf_relax_T > 0._WP) then
+         if (sst_data_source=='CORE1' .or. sst_data_source=='CORE2') then
+            if (update_monthly_flag) then
+               i=month
+               if (mstep > 1) i=i+1 
+               if (i > 12) i=1
+               if (mype==0) write(*,*) 'Updating SST restoring data for month ', i 
+               call read_other_NetCDF(nm_sst_data_file, 'TEMP', i, Tsurf, .true., .true., partit, mesh) 
+            end if
+         end if
+      end if
+
+      ! interpolate in time
+      call data_timeinterp(rdate, partit)
+   END SUBROUTINE update_sst_forcing
+
    SUBROUTINE sbc_do(partit, mesh)
       !!---------------------------------------------------------------------
       !!                    ***  ROUTINE sbc_do ***
@@ -1192,6 +1237,19 @@ CONTAINS
                if (i > 12) i=1
                if (mype==0) write(*,*) 'Updating SSS restoring data for month ', i 
                call read_other_NetCDF(nm_sss_data_file, 'SALT', i, Ssurf, .true., .true., partit, mesh) 
+            end if
+         end if
+      end if
+      
+      ! read in SST for applying SST restoring
+      if (surf_relax_T > 0._WP) then
+         if (sst_data_source=='CORE1' .or. sst_data_source=='CORE2') then
+            if (update_monthly_flag) then
+               i=month
+               if (mstep > 1) i=i+1 
+               if (i > 12) i=1
+               if (mype==0) write(*,*) 'Updating SST restoring data for month ', i 
+               call read_other_NetCDF(nm_sst_data_file, 'TEMP', i, Tsurf, .true., .true., partit, mesh) 
             end if
          end if
       end if

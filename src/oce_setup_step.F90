@@ -668,6 +668,7 @@ SUBROUTINE arrays_init(num_tracers, partit, mesh)
     allocate(heat_flux(node_size), Tsurf(node_size))
     allocate(water_flux(node_size), Ssurf(node_size))
     allocate(relax_salt(node_size))
+    allocate(relax_temp(node_size))
     allocate(virtual_salt(node_size))
 
     allocate(heat_flux_in(node_size))

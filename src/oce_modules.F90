@@ -195,7 +195,7 @@ real(kind=WP), allocatable         :: heat_flux_in(:) !to keep the unmodified (b
 real(kind=WP), allocatable         :: Tsurf_ib(:) ! kh 15.03.21 additional array for asynchronous iceberg computations
 real(kind=WP), allocatable    :: water_flux(:), Ssurf(:)
 real(kind=WP), allocatable    :: Ssurf_ib(:) ! kh 15.03.21 additional array for asynchronous iceberg computations
-real(kind=WP), allocatable    :: virtual_salt(:), relax_salt(:)
+real(kind=WP), allocatable    :: virtual_salt(:), relax_salt(:), relax_temp(:)
 real(kind=WP), allocatable    :: Tclim(:,:), Sclim(:,:)
 
 !--------------

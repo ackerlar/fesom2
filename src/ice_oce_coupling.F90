@@ -485,6 +485,7 @@ subroutine oce_fluxes(ice, dynamics, tracers, partit, mesh)
 !$OMP PARALLEL DO
         do n=1, myDim_nod2D+eDim_nod2D
             relax_salt(n)=surf_relax_S*(Ssurf(n)-salt(ulevels_nod2d(n),n))
+            relax_temp(n)=surf_relax_T*(Tsurf(n)-temp(ulevels_nod2d(n),n))
         end do
 !$OMP END PARALLEL DO
     end if 

@@ -481,8 +481,15 @@ subroutine update_atm_forcing(istep, ice, tracers, dynamics, partit, mesh)
         do_rotate_oce_wind=.false.
         do_rotate_ice_wind=.false.
     end if
+
+    ! LA: 2024-08-29 include sst relaxation
+    if (surf_relax_T > 0.0) then
+        if(mype==0.0) write(*,*) 'LA DEBUG: do update_sst_forcing'
+        update_sst_forcing(partit, mesh)
+    end if
 #else
 #ifndef __ifsinterface
+  if(mype==0.0) write(*,*) 'LA DEBUG: do sbc_do'
   call sbc_do(partit, mesh)
 !$OMP PARALLEL DO
   DO n=1, myDim_nod2D+eDim_nod2D
