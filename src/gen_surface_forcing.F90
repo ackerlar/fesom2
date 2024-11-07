@@ -49,7 +49,9 @@ MODULE g_sbf
 
    include 'netcdf.inc'
 
+   public  update_sst_forcing_ini  
    public  sbc_ini  ! routine called before 1st time step (open files, read namelist,...)
+   public  update_sst_forcing
    public  sbc_do   ! routine called each time step to provide a sbc fileds (wind,...)
    public  sbc_end  ! routine called after last time step
    public  julday   ! get julian day from date
@@ -902,6 +904,64 @@ CONTAINS
       end do
    END SUBROUTINE data_timeinterp
 
+   SUBROUTINE update_sst_forcing_ini(partit, mesh)
+      !!---------------------------------------------------------------------
+      !!                    ***  ROUTINE sbc_ini ***
+      !!
+      !! ** Purpose : inizialization of ocean forcing
+      !! ** Method  :
+      !! ** Action  :
+      !!----------------------------------------------------------------------
+      IMPLICIT NONE
+
+      integer            :: idate ! initialization date
+      real(wp)           :: rdate ! initialization date
+      integer            :: iost  ! I/O status
+      integer            :: sbc_alloc                   !: allocation status
+
+      type(t_mesh),   intent(in)   , target :: mesh
+      type(t_partit), intent(inout), target :: partit
+
+      namelist /nam_sbc/ nm_xwind_file, nm_ywind_file, nm_xstre_file, nm_ystre_file, nm_humi_file, nm_qsr_file, &
+                        nm_qlw_file, nm_tair_file, nm_prec_file, nm_snow_file, &
+                        nm_mslp_file, nm_xwind_var, nm_ywind_var, nm_xstre_var, nm_ystre_var, nm_humi_var, &
+                        nm_qsr_var, nm_qlw_var, nm_tair_var, nm_prec_var, nm_snow_var, &
+                        nm_mslp_var, nm_cloud_var, nm_cloud_file, nm_nc_iyear, nm_nc_imm, nm_nc_idd, nm_nc_freq, nm_nc_tmid, y_perpetual, &
+                        l_xwind, l_ywind, l_xstre, l_ystre, l_humi, l_qsr, l_qlw, l_tair, l_prec, l_mslp, l_cloud, l_snow, &
+                        nm_runoff_file, runoff_data_source, runoff_climatology, nm_sss_data_file, sss_data_source, nm_sst_data_file, sst_data_source, &
+                        chl_data_source, nm_chl_data_file, chl_const
+
+#include "associate_part_def.h"
+#include "associate_mesh_def.h"
+#include "associate_part_ass.h"
+#include "associate_mesh_ass.h"
+
+      ! OPEN and read namelist for SBC
+      open( unit=nm_sbc_unit, file='namelist.forcing', form='formatted', access='sequential', status='old', iostat=iost )
+      if (iost == 0) then
+         if (mype==0) WRITE(*,*) '     file   : ', 'namelist_bc.nml',' open ok'
+      else
+         if (mype==0) WRITE(*,*) 'ERROR: --> bad opening file   : ', 'namelist_bc.nml',' ; iostat=',iost
+         call par_ex(partit%MPI_COMM_FESOM, partit%mype)
+         stop
+      endif
+      READ( nm_sbc_unit, nml=nam_sbc, iostat=iost )
+      close( nm_sbc_unit )
+      
+      if (mype==0) write(*,*) "Start: Ocean forcing inizialization."
+      rdate = real(julday(yearnew,1,1))
+      rdate = rdate+real(daynew-1,WP)+timenew/86400._WP
+      idate = int(rdate)
+
+      if (mype==0) then
+         write(*,*) "Start: Ocean forcing inizialization."
+         write(*,*) "Surface boundary conditions parameters:"
+      end if
+
+      if (mype==0) write(*,*) "DONE:  Ocean forcing inizialization."
+      if (mype==0) write(*,*) 'Parts of forcing data (only constant in time fields) are read'
+   END SUBROUTINE update_sst_forcing_ini
+   
    SUBROUTINE sbc_ini(partit, mesh)
       !!---------------------------------------------------------------------
       !!                    ***  ROUTINE sbc_ini ***
@@ -1126,7 +1186,7 @@ CONTAINS
 #include "associate_mesh_def.h"
 #include "associate_part_ass.h"
 #include "associate_mesh_ass.h"
-
+     
       ! prepare a flag which checks whether to update monthly data (SSS, river runoff)
       update_monthly_flag=( (day_in_month==num_day_in_month(fleapyear,month) .AND. timenew==86400._WP) .OR. mstep==1  )
       
@@ -1137,14 +1197,11 @@ CONTAINS
                i=month
                if (mstep > 1) i=i+1 
                if (i > 12) i=1
-               if (mype==0) write(*,*) 'Updating SST restoring data for month ', i 
-               call read_other_NetCDF(nm_sst_data_file, 'TEMP', i, Tsurf, .true., .true., partit, mesh) 
+               if (mype==0) write(*,*) 'LA DEBUG: Updating SST restoring data for month ', i 
+               call read_other_NetCDF(nm_sst_data_file, 'sst', i, Tsurf, .true., .true., partit, mesh) 
             end if
          end if
       end if
-
-      ! interpolate in time
-      call data_timeinterp(rdate, partit)
    END SUBROUTINE update_sst_forcing
 
    SUBROUTINE sbc_do(partit, mesh)

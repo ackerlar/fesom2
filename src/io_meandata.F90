@@ -412,6 +412,8 @@ CASE ('relaxsalt ')
 CASE ('realsalt  ')
     sel_forcvar(15) = 1
     call def_stream(nod2D , myDim_nod2D , 'realsalt' , 'real salt flux from sea ice', 'm/s*psu', real_salt_flux(:)  , io_list(i)%freq, io_list(i)%unit, io_list(i)%precision, partit, mesh)
+CASE ('relaxtemp ')
+    call def_stream(nod2D , myDim_nod2D , 'relaxtemp', 'relaxation temp flux'       , 'm/s*°C', relax_temp(:) , io_list(i)%freq, io_list(i)%unit, io_list(i)%precision, partit, mesh)
         
 !___________________________________________________________________________________________________________________________________
 ! output KPP vertical mixing schemes

@@ -16,7 +16,8 @@ end module
 ! ==========================================================
 subroutine forcing_setup(partit, mesh)
 use g_CONFIG
-use g_sbf, only: sbc_ini
+use o_param, only: surf_relax_T
+use g_sbf, only: sbc_ini, update_sst_forcing_ini
 use mod_mesh
 USE MOD_PARTIT
 USE MOD_PARSUP
@@ -30,6 +31,10 @@ type(t_partit), intent(inout), target :: partit
      call forcing_array_setup(partit, mesh)
 #ifndef __oasis
      call sbc_ini(partit, mesh)         ! initialize forcing fields
+#else
+    if (surf_relax_T > 0.0) then
+        call update_sst_forcing_ini(partit, mesh)
+    end if
 #endif
   endif 
 end subroutine forcing_setup

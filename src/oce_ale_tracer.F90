@@ -407,7 +407,7 @@ subroutine diff_ver_part_expl_ale(tr_num, tracers, partit, mesh)
         vd_flux=0._WP
         if (tracers%data(tr_num)%ID==1) then
             !flux  = -heat_flux(n)/vcpw
-            flux  = -heat_flux(n)/vcpw +relax_temp(n)
+            flux  = -heat_flux(n)/vcpw -relax_temp(n)
             rdata =  Tsurf(n)
             rlx   =  surf_relax_T
         elseif (tracers%data(tr_num)%ID==2) then
@@ -1312,7 +1312,9 @@ FUNCTION bc_surface(n, id, sval, nzmin, partit)
   !  --> is_nonlinfs=0.0 for linfs
   SELECT CASE (id)
     CASE (1)
-        bc_surface=-dt*(heat_flux(n)/vcpw + sval*water_flux(n)*is_nonlinfs)    
+        
+        ! LA add relaxation term here!
+        bc_surface=-dt*(heat_flux(n)/vcpw - relax_temp(n) + sval*water_flux(n)*is_nonlinfs)   ! changed + to - 
     CASE (2)
         ! --> real_salt_flux(:): salt flux due to containment/releasing of salt
         !     by forming/melting of sea ice

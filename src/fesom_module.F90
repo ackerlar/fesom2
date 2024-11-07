@@ -469,7 +469,10 @@ end if
             !___compute update of atmospheric forcing____________________________
             if (flag_debug .and. f%mype==0)  print *, achar(27)//'[34m'//' --> call update_atm_forcing(n)'//achar(27)//'[0m'
             f%t0_frc = MPI_Wtime()
+            
+            if (f%mype==0) write(*,*) "LA DEBUG: before min(Tsurf)=",minval(Tsurf),", max(Tsurf)=",maxval(Tsurf),", Tsurf(1)=",Tsurf(1)
             call update_atm_forcing(n, f%ice, f%tracers, f%dynamics, f%partit, f%mesh)
+            if (f%mype==0) write(*,*) "LA DEBUG: after  min(Tsurf)=",minval(Tsurf),", max(Tsurf)=",maxval(Tsurf),", Tsurf(1)=",Tsurf(1)
             f%t1_frc = MPI_Wtime()       
             !___compute ice step________________________________________________
             if (f%ice%ice_steps_since_upd>=f%ice%ice_ave_steps-1) then
