@@ -44,7 +44,7 @@ MODULE g_sbf
    USE g_config, only: dummy, ClimateDataPath, dt
    USE g_clock,  only: timeold, timenew, dayold, daynew, yearold, yearnew, cyearnew
    USE g_forcing_arrays,    only: runoff, chl
-   USE g_read_other_NetCDF, only: read_other_NetCDF, read_2ddata_on_grid_netcdf
+   USE g_read_other_NetCDF, only: read_other_NetCDF, read_2ddata_on_grid_netcdf, read_sst_data_on_FESOM_grid
    IMPLICIT NONE
 
    include 'netcdf.inc'
@@ -1198,7 +1198,8 @@ CONTAINS
                if (mstep > 1) i=i+1 
                if (i > 12) i=1
                if (mype==0) write(*,*) 'LA DEBUG: Updating SST restoring data for month ', i 
-               call read_other_NetCDF(nm_sst_data_file, 'sst', i, Tsurf, .true., .true., partit, mesh) 
+               call read_sst_data_on_FESOM_grid(nm_sst_data_file, 'sst', i, Tsurf, partit, mesh) 
+               !call read_other_NetCDF(nm_sst_data_file, 'sst', i, Tsurf, .true., .true., partit, mesh) 
             end if
          end if
       end if

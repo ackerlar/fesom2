@@ -3,6 +3,90 @@
 !
 module g_read_other_NetCDF
 contains
+
+subroutine read_sst_data_on_FESOM_grid(file, vari, itime, model_2Darray, partit, mesh)
+
+  use, intrinsic :: ISO_FORTRAN_ENV
+  use g_config
+  use o_param
+  USE MOD_MESH
+  USE MOD_PARTIT
+  USE MOD_PARSUP
+  implicit none
+
+#include "netcdf.inc" 
+  type(t_mesh),   intent(in),    target :: mesh
+  type(t_partit), intent(inout), target :: partit
+  integer                    :: i, j
+  integer                    :: itime, nodlen
+  integer                    :: status, ncid, varid
+  integer                    :: nodid
+  integer                    :: istart(2), icount(2), elnodes(2)
+  real(real64)               :: miss
+  real(real64), allocatable  :: ncdata(:)
+  real(real64)               :: model_2Darray(partit%myDim_nod2d+partit%eDim_nod2D)   
+  character(*)               :: vari
+  character(*)               :: file
+  integer                    :: ierror           ! return error code
+
+#include "associate_part_def.h"
+#include "associate_mesh_def.h"
+#include "associate_part_ass.h"
+#include "associate_mesh_ass.h"
+
+  if (mype==0) then
+     ! open file
+     status=nf_open(file, nf_nowrite, ncid)
+  end if
+
+  call MPI_BCast(status, 1, MPI_INTEGER, 0, MPI_COMM_FESOM, ierror)
+  if (status.ne.nf_noerr)then
+     print*,'ERROR: CANNOT READ 2D netCDF FILE CORRECTLY !!!!!'
+     print*,'Error in opening netcdf file '//file
+     call par_ex(partit%MPI_COMM_FESOM, partit%mype)
+     stop
+  endif
+
+  if (mype==0) then
+     status=nf_inq_dimid(ncid, 'nod2', nodid)
+     status=nf_inq_dimlen(ncid, nodid, nodlen)
+  end if
+  call MPI_BCast(nodlen, 1, MPI_INTEGER, 0, MPI_COMM_FESOM, ierror)
+
+  allocate(ncdata(nodlen))
+  ncdata = 0.0_WP
+  
+  if (mype==0) then
+    ! data
+     status=nf_inq_varid(ncid, vari, varid)
+     istart = (/1,itime/)
+     icount= (/nodlen,1/)
+     status=nf_get_vara_double(ncid,varid,istart,icount,ncdata)
+
+    ! missing value
+     status= nf_get_att_double(ncid,varid,'missing_value',miss)
+    ! close file
+    status=nf_close(ncid)
+  end if
+  call MPI_BCast(ncdata, nodlen, MPI_DOUBLE_PRECISION, 0, MPI_COMM_FESOM, ierror)
+  call MPI_BCast(miss,               1, MPI_DOUBLE_PRECISION, 0, MPI_COMM_FESOM, ierror)
+
+  do i=1,nodlen
+     if (ncdata(i)==miss .or. ncdata(i)==-99.0_WP) then  !!
+        ncdata(i)=0.0_WP
+     end if
+  end do
+
+  do j=1,myDim_nod2D+eDim_nod2D
+     model_2Darray(j) = ncdata(myList_nod2D(j))
+  end do
+!myList_nod2D(1:myDim_nod2D+eDim_nod2D)
+!model_2Darray(partit%myDim_nod2d+partit%eDim_nod2D)
+  deallocate(ncdata)
+
+  end subroutine read_sst_data_on_FESOM_grid
+
+
 subroutine read_other_NetCDF(file, vari, itime, model_2Darray, check_dummy, do_onvert, partit, mesh)
   ! Read 2D data and interpolate to the model grid.
   ! Currently used to read runoff and SSS.
